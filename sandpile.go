@@ -3,6 +3,7 @@ import(
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 )
 
 type Board struct{
@@ -31,6 +32,28 @@ func (b *Board) Topple(r, c int){
 		}
 		if(b.Contains(r,c+1)){
 			b.val[r][c+1]++
+		}
+		b.val[r][c] -= 4
+	}
+}
+//careful here: may cause stack overflow
+func (b *Board) topple(r, c int){
+	if b.val[r][c] >= 4{
+		if(b.Contains(r-1,c)){
+			b.val[r-1][c]++
+			b.topple(r-1,c)
+		}
+		if(b.Contains(r,c-1)){
+			b.val[r][c-1]++
+			b.topple(r,c-1)
+		}
+		if(b.Contains(r+1,c)){
+			b.val[r+1][c]++
+			b.topple(r+1,c)
+		}
+		if(b.Contains(r,c+1)){
+			b.val[r][c+1]++
+			b.topple(r,c+1)
 		}
 		b.val[r][c] -= 4
 	}
@@ -66,16 +89,16 @@ func (b *Board) NumRows() int{
 func (b *Board) NumCols() int{
 	return b.size
 } 
-
+//compute the steady state of the board by topple. 
 func (b *Board) ComputeSteadyState(){
 	for !b.IsConverged(){
 		for i := 0; i < b.NumRows(); i++{
 			for j:= 0; j < b.NumCols(); j++{
 				b.Topple(i,j)
+				//b.topple(i,j)
 			}
 		} 
 	}
-
 }
 // drawField should draw a representation of the Board 
 // on a canvas and save the canvas to a PNG file with given name.
@@ -135,7 +158,15 @@ func main(){
 	}
 	b := CreateBoard(size)
 	b.Set(size/2, size/2, pile)
+	i1 := time.Now()
 	b.ComputeSteadyState()
-	b.DrawBoard("Board.png")
+	i2 := time.Now()
+	b.DrawBoard("board.png")
+	i := i2.Sub(i1)
+	fmt.Println("The computation runs for" , i)
+	// brute force 
+	// 200 10000 : 1s59
+	// 200 100000 : 22s03
+	// 200 1000000 : 4m8s 
 
 }
