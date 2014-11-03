@@ -5,7 +5,8 @@ import(
 	"strconv"
 	"time"
 )
-
+//2D slice record value of each cell and 
+//size record the slice's scope
 type Board struct{
 	val [][]int
 	size int
@@ -36,28 +37,7 @@ func (b *Board) Topple(r, c int){
 		b.val[r][c] -= 4
 	}
 }
-//careful here: may cause stack overflow
-func (b *Board) topple(r, c int){
-	if b.val[r][c] >= 4{
-		if(b.Contains(r-1,c)){
-			b.val[r-1][c]++
-			b.topple(r-1,c)
-		}
-		if(b.Contains(r,c-1)){
-			b.val[r][c-1]++
-			b.topple(r,c-1)
-		}
-		if(b.Contains(r+1,c)){
-			b.val[r+1][c]++
-			b.topple(r+1,c)
-		}
-		if(b.Contains(r,c+1)){
-			b.val[r][c+1]++
-			b.topple(r,c+1)
-		}
-		b.val[r][c] -= 4
-	}
-}
+
 //returns true if (r, c) is within the field
 func (b *Board) Contains(r,c int) bool{
 	return r >= 0 && r < b.size && c >= 0 && c < b.size
@@ -95,13 +75,12 @@ func (b *Board) ComputeSteadyState(){
 		for i := 0; i < b.NumRows(); i++{
 			for j:= 0; j < b.NumCols(); j++{
 				b.Topple(i,j)
-				//b.topple(i,j)
 			}
 		} 
 	}
 }
-// drawField should draw a representation of the Board 
-// on a canvas and save the canvas to a PNG file with given name.
+//drawField should draw a representation of the Board 
+//on a canvas and save the canvas to a PNG file with given name.
 func (b *Board) DrawBoard(filename string) {
 	pic := CreateNewCanvas(b.NumRows(), b.NumCols())
 	pic.SetLineWidth(1)
@@ -128,6 +107,7 @@ func (b *Board) DrawBoard(filename string) {
 	}
 	pic.SaveToPNG(filename)
 }
+//both work for 1 square drawing
 func DrawPoint(a Canvas, r, c int) {
     a.ClearRect(r,c,r+1,c+1)
 }
@@ -139,7 +119,6 @@ func drawSquare(a Canvas, r, c int) {
     a.LineTo(x2, y2)
     a.LineTo(x2, y1)
     a.LineTo(x1, y1)
-    //instead of FillStroke()
     a.Fill()
 }
 func main(){
@@ -156,15 +135,15 @@ func main(){
 	if err2 != nil ||pile < 0{
 		fmt.Println("Sorry, PILE should be a positive number")
 	}
+
 	b := CreateBoard(size)
-	b.Set(size/2, size/2, pile)
+	b.Set(size/2, size/2, pile)//set intial state
 	i1 := time.Now()
-	b.ComputeSteadyState()
+	b.ComputeSteadyState()//compute  steady state
 	i2 := time.Now()
-	b.DrawBoard("board.png")
-	i := i2.Sub(i1)
+	b.DrawBoard("board.png")//draw the board
+	i := i2.Sub(i1)//time counter
 	fmt.Println("The computation runs for" , i)
-	// brute force 
 	// 200 10000 : 1s59
 	// 200 100000 : 22s03
 	// 200 1000000 : 4m8s 
